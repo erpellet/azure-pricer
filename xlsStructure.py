@@ -420,6 +420,45 @@ class xlsStructure:
 				'banded_rows': True,
 				'autofilter': True
 			}
+		},
+		{
+			'worksheetName': 'azure-premium-disk-prices',
+			'firstCellRow': 0,
+			'firstCellColumn': 5,
+			'lastCellRow': len(premiumDisks),
+			'lastCellColumn': 6,
+			'options': {
+				'name': 'PremiumDisks',
+				'header_row': True,
+				'banded_rows': True,
+				'autofilter': True
+			}
+		},
+		{
+			'worksheetName': 'azure-standard-disk-prices',
+			'firstCellRow': 0,
+			'firstCellColumn': 5,
+			'lastCellRow': len(standardDisks),
+			'lastCellColumn': 6,
+			'options': {
+				'name': 'StandardHDDDisks',
+				'header_row': True,
+				'banded_rows': True,
+				'autofilter': True
+			}
+		},
+		{
+			'worksheetName': 'azure-standardSSD-disk-prices',
+			'firstCellRow': 0,
+			'firstCellColumn': 5,
+			'lastCellRow': len(standardSSDDisks),
+			'lastCellColumn': 6,
+			'options': {
+				'name': 'StandardSSDDisks',
+				'header_row': True,
+				'banded_rows': True,
+				'autofilter': True
+			}
 		}
 
 	]

@@ -824,7 +824,7 @@ for table_definition in xls.tablesDefinition:
 	# read column headers
 	columns_definition = []
 	shared_strings = sorted(worksheet.str_table.string_table, key=worksheet.str_table.string_table.get)
-	for column in range (first_cell_column, last_cell_column):
+	for column in range (first_cell_column, last_cell_column + 1):
 		cell_value = worksheet.table[first_cell_row][column]
 		if type(cell_value) == xlsxwriter.worksheet.cell_string_tuple:
 			# ref: https://stackoverflow.com/questions/62865195/python-xlsxwriter-extract-value-from-cell
