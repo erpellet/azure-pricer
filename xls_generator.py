@@ -10,8 +10,8 @@ import priceReaderCompute
 import priceReaderManagedDisk
 import priceReaderSiteRecovery
 
-workbookNamePattern = '/mnt/c/Users/segonza/Desktop/Azure-Quote-Tool-{}.xlsx'
-installation_dir = '/home/sergio/azure-pricer/' 
+workbookNamePattern = './Azure-Quote-Tool-{}.xlsx'
+installation_dir = '.' 
 regions=['germany-north', 'germany-west-central', 'south-africa-north', 'south-africa-west', 'switzerland-north', 'switzerland-west', 'uae-central', 'uae-north', 'asia-pacific-east', 'asia-pacific-southeast', 'australia-central', 'australia-central-2', 'australia-east','australia-southeast', 'brazil-south', 'canada-central', 'canada-east', 'central-india', 'europe-north', 'europe-west', 'france-central', 'france-south', 'germany-central', 'germany-northeast', 'japan-east', 'japan-west', 'korea-central', 'korea-south', 'south-india', 'united-kingdom-south', 'united-kingdom-west', 'us-central', 'us-east', 'us-east-2', 'usgov-arizona', 'usgov-iowa', 'usgov-texas', 'usgov-virginia', 'us-north-central', 'us-south-central', 'us-west', 'us-west-2', 'us-west-central', 'west-india', 'norway-east', 'norway-west']
 
 regions.sort()
@@ -21,7 +21,7 @@ numASRSkusCheck   = 33
 numPremDisksCheck = 276
 numStanDisksCheck = 276
 
-today = datetime.date.today().strftime('%d%m%y')
+today = datetime.date.today().strftime('%d%m%y%H%M%S')
 workbookFile = workbookNamePattern.format(today)
 
 if len(sys.argv) > 1:
@@ -62,13 +62,14 @@ columnYear1YResInsVMPrice = xls.getVMCalculationColumn('1Y RI')
 columnYear3YResInsVMPrice = xls.getVMCalculationColumn('3Y RI')
 columnBestYearVMPrice = xls.getVMCalculationColumn('BEST PRICE')
 #KEY DATA
-totalNumDisks = len(priceReaderManagedDisk.standardDiskSizes) + len(priceReaderManagedDisk.premiumDiskSizes)
+totalNumDisks = len(priceReaderManagedDisk.standardDiskSizes) + len(priceReaderManagedDisk.premiumDiskSizes) + len(priceReaderManagedDisk.standardSSDDiskSizes)
 
 #1 - GET RESOURCE PRICES
 computePriceMatrix = priceReaderCompute.getPriceMatrix(regions)
 siteRecoveryPriceMatrix = priceReaderSiteRecovery.getPriceMatrix(regions)
 premiumDiskPriceMatrix  = priceReaderManagedDisk.getPriceMatrixPremium(regions)
 standardDiskPriceMatrix = priceReaderManagedDisk.getPriceMatrixStandard(regions)
+standardSSDDiskPriceMatrix = priceReaderManagedDisk.getPriceMatrixStandardSSD(regions)
 
 numVmSizes = len(computePriceMatrix)
 numSiteRecoverySKUs = len(siteRecoveryPriceMatrix)
@@ -101,6 +102,7 @@ azureVMData3YExcelTab = workbook.add_worksheet('azure-vm-prices-3Y')
 azureASRExcelTab = workbook.add_worksheet('azure-asr-prices')
 azurePremiumDiskExcelTab  = workbook.add_worksheet('azure-premium-disk-prices')
 azureStandardDiskExcelTab = workbook.add_worksheet('azure-standard-disk-prices')
+azureStandardSSDDiskExcelTab = workbook.add_worksheet('azure-standardSSD-disk-prices')
 
 #4 - DEFINE FORMATS
 inputHeaderStyle = workbook.add_format()
@@ -236,6 +238,12 @@ formulaVMBaseMinPricePattern="=IF({0}{1}=\"YES\", IF( B3=\"CPU+MEM\" , _xlfn.MIN
 formulaVM1YMinPricePattern=  "=IF({0}{1}=\"YES\", IF( B3=\"CPU+MEM\" , _xlfn.MINIFS('azure-vm-prices-1Y'!C$2:C${2},   'azure-vm-prices-1Y'!A$2:A${2},   \">=\"&{3}{1}*(100-{4})/100, 'azure-vm-prices-1Y'!B$2:B${2},   \">=\"&{5}{1}*(100-{4})/100, 'azure-vm-prices-1Y'!G$2:G${2},{6}{1},   'azure-vm-prices-1Y'!H$2:H${2},   {7}{1}, 'azure-vm-prices-1Y'!D$2:D${2},   IF({8}{1}=\"YES\", \"YES\", \"*\"), 'azure-vm-prices-1Y'!E$2:E${2},   IF({9}{1}=\"YES\", \"YES\", \"*\"), 'azure-vm-prices-1Y'!F$2:F${2},   IF({10}{1}=\"NO\", \"NO\", \"*\"), 'azure-vm-prices-1Y'!I$2:I${2},   IF({11}{1}=\"YES\", \"YES\", \"*\") ), _xlfn.MINIFS('azure-vm-prices-1Y'!C$2:C${2}, 'azure-vm-prices-1Y'!B$2:B${2}, \">=\"&{5}{1}*(100-{4})/100, 'azure-vm-prices-1Y'!G$2:G${2},{6}{1}, 'azure-vm-prices-1Y'!H$2:H${2}, {7}{1}, 'azure-vm-prices-1Y'!D$2:D${2}, IF({8}{1}=\"YES\", \"YES\", \"*\"), 'azure-vm-prices-1Y'!E$2:E${2}, IF({9}{1}=\"YES\", \"YES\", \"*\"), 'azure-vm-prices-1Y'!F$2:F${2}, IF({10}{1}=\"NO\", \"NO\", \"*\"), 'azure-vm-prices-1Y'!I$2:I${2}, IF({11}{1}=\"YES\", \"YES\", \"*\") ) ) , \"\")"
 formulaVM3YMinPricePattern=  "=IF({0}{1}=\"YES\", IF( B3=\"CPU+MEM\" , _xlfn.MINIFS('azure-vm-prices-3Y'!C$2:C${2},   'azure-vm-prices-3Y'!A$2:A${2},   \">=\"&{3}{1}*(100-{4})/100, 'azure-vm-prices-3Y'!B$2:B${2},   \">=\"&{5}{1}*(100-{4})/100, 'azure-vm-prices-3Y'!G$2:G${2},{6}{1},   'azure-vm-prices-3Y'!H$2:H${2},   {7}{1}, 'azure-vm-prices-3Y'!D$2:D${2},   IF({8}{1}=\"YES\", \"YES\", \"*\"), 'azure-vm-prices-3Y'!E$2:E${2},   IF({9}{1}=\"YES\", \"YES\", \"*\"), 'azure-vm-prices-3Y'!F$2:F${2},   IF({10}{1}=\"NO\", \"NO\", \"*\"), 'azure-vm-prices-3Y'!I$2:I${2},   IF({11}{1}=\"YES\", \"YES\", \"*\") ), _xlfn.MINIFS('azure-vm-prices-3Y'!C$2:C${2}, 'azure-vm-prices-3Y'!B$2:B${2}, \">=\"&{5}{1}*(100-{4})/100, 'azure-vm-prices-3Y'!G$2:G${2},{6}{1}, 'azure-vm-prices-3Y'!H$2:H${2}, {7}{1}, 'azure-vm-prices-3Y'!D$2:D${2}, IF({8}{1}=\"YES\", \"YES\", \"*\"), 'azure-vm-prices-3Y'!E$2:E${2}, IF({9}{1}=\"YES\", \"YES\", \"*\"), 'azure-vm-prices-3Y'!F$2:F${2}, IF({10}{1}=\"NO\", \"NO\", \"*\"), 'azure-vm-prices-3Y'!I$2:I${2}, IF({11}{1}=\"YES\", \"YES\", \"*\") ) ) , \"\")"
 
+#LAMDBA FUNCTION
+lambdaFunctionName = "GetDiskQuantity"
+lambdaFunctionDeclaration = "=LAMBDA(capacity,DiskName,DiskCatalog, IF(OFFSET(DiskCatalog,0,0,1,1)=\"\",\"error\",IF(OFFSET(DiskCatalog,0,0,1,1)=DiskName,ROUNDDOWN(capacity/OFFSET(DiskCatalog,0,1,1,1),0)+IF(OFFSET(DiskCatalog,1,0,1,1)=\"\",1,0),GetDiskQuantity(MOD(capacity,OFFSET(DiskCatalog,0,1,1,1)),DiskName,OFFSET(DiskCatalog,1,0,1,1)))))"
+
+workbook.define_name(lambdaFunctionName, lambdaFunctionDeclaration)
+
 #FORMULAS AND STYLE FOR CALCULATIONS
 for rowIndex in range(1,xls.rowsForVMInput):
 	formulaVMBaseMinPrice=formulaVMBaseMinPricePattern.format(dataOKColumn, rowIndex+1, numVmSizes, CPUColumn, perfGainValueCell, memColumn, regionColumn, licenseColumn, SAPColumn, GPUColumn, bSeriesColumn, ssdRequiredCheckColumn)
@@ -308,6 +316,24 @@ for diskIndex in range(xls.managedDataDiskColumns['firstCellRow'], len(priceRead
 			formula ="=IF(AND({0}{1}=\"PREMIUM\",{2}{1}=\"YES\",{3}{1}<'azure-premium-disk-prices'!G{4},{3}{1}>0),   ( 1+IF({5}{1}=\"YES\",1))*{6}{1},\"\")".format(dataDiskTypeColumn, rowIndex + 1, dataOKColumn, dataDiskSizeColumn, diskDataIndexInDiskTab, ASRColumn, xls.getCustomerDataColumn('UNITS'))
 		else:
 			formula ="=IF(AND({0}{1}=\"PREMIUM\",{2}{1}=\"YES\",{3}{1}>'azure-premium-disk-prices'!G{4},{3}{1}<'azure-premium-disk-prices'!G{6}),( 1+IF({5}{1}=\"YES\",1))*{7}{1},\"\")".format(dataDiskTypeColumn, rowIndex + 1, dataOKColumn, dataDiskSizeColumn, diskDataIndexInDiskTab - 1, ASRColumn, diskDataIndexInDiskTab, xls.getCustomerDataColumn('UNITS'))
+		customerVMDataExcelTab.write_formula(rowIndex, columnIndex, formula, selectBodyStyle)	
+
+	#STANDARD SSD DATA DISKS
+dataDiskFirstColumn = columnIndex + 1
+for diskIndex in range(xls.managedDataDiskColumns['firstCellRow'], len(priceReaderManagedDisk.standardSSDDiskSizes) ):
+	columnIndex = dataDiskFirstColumn + diskIndex
+	diskName=priceReaderManagedDisk.standardSSDDiskSizes[diskIndex]
+	#SET WIDTH
+	customerVMDataExcelTab.set_column(columnIndex, columnIndex, dataDiskColumnWidth) 		
+	#SET HEADER
+	customerVMDataExcelTab.write(xls.managedDataDiskColumns['firstCellRow'], columnIndex, dataDiskPrefix+diskName, selectHeaderStyle)
+	#SET FORMULA
+	diskDataIndexInDiskTab = diskIndex + 2
+	for rowIndex in range(1,xls.rowsForVMInput):
+		if diskIndex == 0:
+			formula ="=IF(AND({0}{1}=\"STANDARDSSD\",{2}{1}=\"YES\",{3}{1}<'azure-standardSSD-disk-prices'!G{4},{3}{1}>0),   ( 1+IF({5}{1}=\"YES\",1))*{6}{1},\"\")".format(dataDiskTypeColumn, rowIndex + 1, dataOKColumn, dataDiskSizeColumn, diskDataIndexInDiskTab, ASRColumn, xls.getCustomerDataColumn('UNITS'))
+		else:
+			formula ="=IF(AND({0}{1}=\"STANDARDSSD\",{2}{1}=\"YES\",{3}{1}>'azure-standardSSD-disk-prices'!G{4},{3}{1}<'azure-standardSSD-disk-prices'!G{6}),( 1+IF({5}{1}=\"YES\",1))*{7}{1},\"\")".format(dataDiskTypeColumn, rowIndex + 1, dataOKColumn, dataDiskSizeColumn, diskDataIndexInDiskTab - 1, ASRColumn, diskDataIndexInDiskTab, xls.getCustomerDataColumn('UNITS'))
 		customerVMDataExcelTab.write_formula(rowIndex, columnIndex, formula, selectBodyStyle)	
 
 #7 - BLOCK 5 - ASR CALCULATION COLUMNS
@@ -414,9 +440,12 @@ for column in xls.dataDiskSummary['columns']:
 	#STANDARD DATA DISKS 
 for index in range(0, len(priceReaderManagedDisk.standardDiskSizes)):
 	customerVMDataExcelTab.write(xls.dataDiskSummary['firstCellRow'] + index, 0 , priceReaderManagedDisk.standardDiskSizes[index], selectHeaderStyle)
+	#STANDARD SSD DATA DISKS 
+for index in range(0, len(priceReaderManagedDisk.standardSSDDiskSizes)):
+	customerVMDataExcelTab.write(xls.dataDiskSummary['firstCellRow'] + len(priceReaderManagedDisk.standardDiskSizes) + index, 0 , priceReaderManagedDisk.standardSSDDiskSizes[index], selectHeaderStyle)
 	#PREMIUM DATA DISKS 
 for index in range(0, len(priceReaderManagedDisk.premiumDiskSizes)):
-	customerVMDataExcelTab.write(xls.dataDiskSummary['firstCellRow'] + len(priceReaderManagedDisk.standardDiskSizes) + index, 0 , priceReaderManagedDisk.premiumDiskSizes[index], selectHeaderStyle)
+	customerVMDataExcelTab.write(xls.dataDiskSummary['firstCellRow'] + len(priceReaderManagedDisk.standardDiskSizes) + len(priceReaderManagedDisk.standardSSDDiskSizes) + index, 0 , priceReaderManagedDisk.premiumDiskSizes[index], selectHeaderStyle)
 	#STANDARD DATA DISKS SUMMARY CALCULATIONS
 for columnIndex in range(xls.managedDataDiskColumns['firstColumnIndex'], xls.managedDataDiskColumns['firstColumnIndex'] + len(priceReaderManagedDisk.standardDiskSizes)):
 	formulaCountDisk="=SUM({0}{1}:{0}{2})".format( xls.alphabet[columnIndex], xls.managedDataDiskColumns['firstCellRow'] + 1, xls.rowsForVMInput + 1)
@@ -424,11 +453,18 @@ for columnIndex in range(xls.managedDataDiskColumns['firstColumnIndex'], xls.man
 	currentDiskPriceRow= columnIndex - xls.managedDataDiskColumns['firstColumnIndex'] + 2
 	
 	customerVMDataExcelTab.write_formula(currentCountRow - 1, 1, formulaCountDisk, selectBodyStyle)
-	#PREMIUM DATA DISKS SUMMARY CALCULATIONS
+	#STANDARD SSD DATA DISKS SUMMARY CALCULATIONS
 for columnIndex in range(xls.managedDataDiskColumns['firstColumnIndex']  + len(priceReaderManagedDisk.standardDiskSizes), xls.managedDataDiskColumns['firstColumnIndex'] + len(priceReaderManagedDisk.standardDiskSizes) + len(priceReaderManagedDisk.premiumDiskSizes)):
 	formulaCountDisk="=SUM({0}{1}:{0}{2})".format( xls.alphabet[columnIndex], xls.managedDataDiskColumns['firstCellRow'] + 1, xls.rowsForVMInput + 1)
 	currentCountRow=columnIndex - xls.managedDataDiskColumns['firstColumnIndex'] + xls.dataDiskSummary['firstCellRow'] + 1
 	currentDiskPriceRow= columnIndex - xls.managedDataDiskColumns['firstColumnIndex'] - len(priceReaderManagedDisk.standardDiskSizes) + 2
+	
+	customerVMDataExcelTab.write_formula(currentCountRow - 1, 1, formulaCountDisk, selectBodyStyle)
+	#PREMIUM DATA DISKS SUMMARY CALCULATIONS
+for columnIndex in range(xls.managedDataDiskColumns['firstColumnIndex']  + len(priceReaderManagedDisk.standardDiskSizes), xls.managedDataDiskColumns['firstColumnIndex'] + len(priceReaderManagedDisk.standardDiskSizes) + len(priceReaderManagedDisk.premiumDiskSizes)):
+	formulaCountDisk="=SUM({0}{1}:{0}{2})".format( xls.alphabet[columnIndex], xls.managedDataDiskColumns['firstCellRow'] + 1, xls.rowsForVMInput + 1)
+	currentCountRow=columnIndex - xls.managedDataDiskColumns['firstColumnIndex'] + xls.dataDiskSummary['firstCellRow'] + 1
+	currentDiskPriceRow= columnIndex - xls.managedDataDiskColumns['firstColumnIndex'] - len(priceReaderManagedDisk.standardDiskSizes) - len(priceReaderManagedDisk.standardSSDDiskSizes) + 2
 	
 	customerVMDataExcelTab.write_formula(currentCountRow - 1, 1, formulaCountDisk, selectBodyStyle)
 
@@ -706,13 +742,14 @@ for size in  sorted(premiumDiskPriceMatrix):
 	azurePremiumDiskExcelTab.write(currentLine, 3, priceBase, inputBodyStyle)
 	currentLine += 1	
 
-currentLine=1	
-for size in xls.premiumDisks:
+currentLine=1
+
+for size in sorted(xls.premiumDisks, key=lambda k: k['diskSize'], reverse=True):	
 	azurePremiumDiskExcelTab.write(currentLine, 5, size['diskName'], inputBodyStyle)
 	azurePremiumDiskExcelTab.write(currentLine, 6, size['diskSize'], inputBodyStyle)	
 	currentLine += 1
 	
-#STANDARD STORAGE 
+#STANDARD HDD STORAGE 
 azureStandardDiskExcelTab.write(0, 0, 'Region', inputHeaderStyle)
 azureStandardDiskExcelTab.write(0, 1, 'Disk Size', inputHeaderStyle)
 azureStandardDiskExcelTab.set_column(0, 0, 25)
@@ -737,9 +774,43 @@ for size in  sorted(standardDiskPriceMatrix):
 	currentLine += 1	
 
 currentLine=1	
-for size in xls.standardDisks:
+
+for size in sorted(xls.premiumDisks , key=lambda k: k['diskSize'], reverse=True):
 	azureStandardDiskExcelTab.write(currentLine, 5, size['diskName'], inputBodyStyle)
 	azureStandardDiskExcelTab.write(currentLine, 6, size['diskSize'], inputBodyStyle)	
 	currentLine += 1
+
+#STANDARD SSD STORAGE 
+azureStandardSSDDiskExcelTab.write(0, 0, 'Region', inputHeaderStyle)
+azureStandardSSDDiskExcelTab.write(0, 1, 'Disk Size', inputHeaderStyle)
+azureStandardSSDDiskExcelTab.set_column(0, 0, 25)
+azureStandardSSDDiskExcelTab.set_column(1, 2, 15)
+azureStandardSSDDiskExcelTab.write(0, 2, 'Capacity', inputHeaderStyle)
+azureStandardSSDDiskExcelTab.write(0, 3, 'Cost', inputHeaderStyle)
+azureStandardSSDDiskExcelTab.write(0, 5, 'DISK NAME', inputHeaderStyle)
+azureStandardSSDDiskExcelTab.write(0, 6, 'DISK CAPACITY', inputHeaderStyle)
+
+
+currentLine = 1
+for size in  sorted(standardSSDDiskPriceMatrix, reverse=True):
+	region = standardSSDDiskPriceMatrix[size]['region']
+	priceBase = standardSSDDiskPriceMatrix[size]['price']
+	name = standardSSDDiskPriceMatrix[size]['name']
+	capacity = standardSSDDiskPriceMatrix[size]['size']
 	
+	azureStandardSSDDiskExcelTab.write(currentLine, 0, region,    inputBodyStyle)	
+	azureStandardSSDDiskExcelTab.write(currentLine, 1, name,      inputBodyStyle)
+	azureStandardSSDDiskExcelTab.write(currentLine, 2, capacity,  inputBodyStyle)
+	azureStandardSSDDiskExcelTab.write(currentLine, 3, priceBase, inputBodyStyle)
+	currentLine += 1	
+
+currentLine=1	
+
+#for size in sorted(xls.standardDisks, reverse=True, key='diskSize'):
+for size in sorted(xls.standardSSDDisks, key=lambda k: k['diskSize'], reverse=True):
+	azureStandardSSDDiskExcelTab.write(currentLine, 5, size['diskName'], inputBodyStyle)
+	azureStandardSSDDiskExcelTab.write(currentLine, 6, size['diskSize'], inputBodyStyle)	
+	currentLine += 1
+
+
 workbook.close()    

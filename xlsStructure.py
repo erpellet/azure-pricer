@@ -4,12 +4,12 @@ class xlsStructure:
 
 	rowsForVMInput=10000
 
-	alphabet = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z', 'AA', 'AB', 'AC', 'AD', 'AE', 'AF', 'AG', 'AH', 'AI', 'AJ', 'AK', 'AL', 'AM', 'AN', 'AO', 'AP', 'AQ', 'AR', 'AS', 'AT', 'AU', 'AV', 'AW', 'AX', 'AY', 'AZ', 'BA', 'BB', 'BC', 'BD', 'BE', 'BF', 'BG', 'BH', 'BI', 'BJ', 'BK', 'BL' ]
+	alphabet = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z', 'AA','AB','AC','AD','AE','AF','AG','AH','AI','AJ','AK','AL','AM','AN','AO','AP','AQ','AR','AS','AT','AU','AV','AW','AX','AY','AZ','BA','BB','BC','BD','BE','BF','BG','BH','BI','BJ','BK','BL','BM','BN','BO','BP','BQ','BR','BS','BT','BU','BV','BW','BX','BY','BZ','CA','CB','CC','CD','CE','CF','CG','CH','CI','CJ','CK','CL','CM','CN','CO','CP','CQ','CR','CS','CT','CU','CV','CW','CX','CY','CZ']
 	
 	firstColumnWidth=10
 	firstColumnIndex=0
 	
-	regionListColumn=63
+	regionListColumn=100
 	
 	#BLOCK 1
 	assumptions = {
@@ -230,7 +230,7 @@ class xlsStructure:
 		'firstCellRow': 0,	
 		'name' : 'ASR',
 		'width' : 8,
-		'firstColumnIndex' : managedDataDiskColumns['firstColumnIndex'] + len(priceReaderManagedDisk.standardDiskSizes )  + len(priceReaderManagedDisk.premiumDiskSizes )
+		'firstColumnIndex' : managedDataDiskColumns['firstColumnIndex'] + len(priceReaderManagedDisk.standardDiskSizes)  + len(priceReaderManagedDisk.premiumDiskSizes) + len(priceReaderManagedDisk.standardSSDDiskSizes)
 	}	
 	
 	#BLOCK 6
@@ -319,7 +319,7 @@ class xlsStructure:
 	#BLOCK 8
 	OSDiskSummary = {
 		'firstCellColumn':0,
-		'firstCellRow': 31,
+		'firstCellRow': dataDiskSummary['firstCellRow'] + len(priceReaderManagedDisk.standardDiskSizes)  + len(priceReaderManagedDisk.premiumDiskSizes) + len(priceReaderManagedDisk.standardSSDDiskSizes) + 1,
 		'header': {
 			'width': 2,
 			'title': 'OS DISK SUMMARY'
@@ -362,7 +362,10 @@ class xlsStructure:
 		{ "diskName":"P20", "diskSize":512},
 		{ "diskName":"P30", "diskSize":1024},
 		{ "diskName":"P40", "diskSize":2048},
-		{ "diskName":"P50", "diskSize":4096}		
+		{ "diskName":"P50", "diskSize":4096},		
+		{ "diskName":"P60", "diskSize":8192},		
+		{ "diskName":"P70", "diskSize":16384},		
+		{ "diskName":"P80", "diskSize":32767}		
 	]
 	
 	standardDisks = [
@@ -373,9 +376,26 @@ class xlsStructure:
 		{ "diskName":"S20", "diskSize":512},
 		{ "diskName":"S30", "diskSize":1024},
 		{ "diskName":"S40", "diskSize":2048},
-		{ "diskName":"S50", "diskSize":4096}		
+		{ "diskName":"S50", "diskSize":4096},
+		{ "diskName":"S60", "diskSize":8192},
+		{ "diskName":"S70", "diskSize":16384},
+		{ "diskName":"S80", "diskSize":32767}		
 	]
-	
+
+	standardSSDDisks = [
+		{ "diskName":"E4",  "diskSize":32},
+		{ "diskName":"E6",  "diskSize":64},
+		{ "diskName":"E10", "diskSize":128},
+		{ "diskName":"E15", "diskSize":256},
+		{ "diskName":"E20", "diskSize":512},
+		{ "diskName":"E30", "diskSize":1024},
+		{ "diskName":"E40", "diskSize":2048},
+		{ "diskName":"E50", "diskSize":4096},
+		{ "diskName":"E60", "diskSize":8192},
+		{ "diskName":"E70", "diskSize":16384},
+		{ "diskName":"E80", "diskSize":32767}		
+	]
+
 	
 	#GIVEN A CUSTOMER DATA COLUMN RELATIVE INDEX, GET ABSOLUTE SPREADSHEET POSITION
 	def getCustomerDataColumnPositionInExcel(columnIndex):
