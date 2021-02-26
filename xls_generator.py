@@ -21,7 +21,7 @@ numASRSkusCheck   = 33
 numPremDisksCheck = 276
 numStanDisksCheck = 276
 
-today = datetime.date.today().strftime('%d%m%y%H%M%S')
+today = datetime.datetime.now().strftime('%d%m%y%H%M%S')
 workbookFile = workbookNamePattern.format(today)
 
 if len(sys.argv) > 1:
@@ -461,7 +461,7 @@ for columnIndex in range(xls.managedDataDiskColumns['firstColumnIndex']  + len(p
 	
 	customerVMDataExcelTab.write_formula(currentCountRow - 1, 1, formulaCountDisk, selectBodyStyle)
 	#PREMIUM DATA DISKS SUMMARY CALCULATIONS
-for columnIndex in range(xls.managedDataDiskColumns['firstColumnIndex']  + len(priceReaderManagedDisk.standardDiskSizes), xls.managedDataDiskColumns['firstColumnIndex'] + len(priceReaderManagedDisk.standardDiskSizes) + len(priceReaderManagedDisk.premiumDiskSizes)):
+for columnIndex in range(xls.managedDataDiskColumns['firstColumnIndex']  + len(priceReaderManagedDisk.standardDiskSizes) + len(priceReaderManagedDisk.standardSSDDiskSizes), xls.managedDataDiskColumns['firstColumnIndex'] + len(priceReaderManagedDisk.standardDiskSizes) + len(priceReaderManagedDisk.standardSSDDiskSizes) + len(priceReaderManagedDisk.premiumDiskSizes)):
 	formulaCountDisk="=SUM({0}{1}:{0}{2})".format( xls.alphabet[columnIndex], xls.managedDataDiskColumns['firstCellRow'] + 1, xls.rowsForVMInput + 1)
 	currentCountRow=columnIndex - xls.managedDataDiskColumns['firstColumnIndex'] + xls.dataDiskSummary['firstCellRow'] + 1
 	currentDiskPriceRow= columnIndex - xls.managedDataDiskColumns['firstColumnIndex'] - len(priceReaderManagedDisk.standardDiskSizes) - len(priceReaderManagedDisk.standardSSDDiskSizes) + 2
@@ -471,13 +471,13 @@ for columnIndex in range(xls.managedDataDiskColumns['firstColumnIndex']  + len(p
 #10 - BLOCK 8 - OS DISK SUMMARY
 	#CALCULATE AND PUT HEADER
 firstColumnLetter=xls.getColumnLetterFromIndex(xls.OSDiskSummary['firstCellColumn'])
-firstRowLetter=xls.OSDiskSummary['firstCellRow'] - 1
+firstRowLetter=xls.OSDiskSummary['firstCellRow'] 
 lastColumnLetter=xls.getColumnLetterFromIndex(xls.OSDiskSummary['firstCellColumn'] + xls.OSDiskSummary['header']['width'] - 1)
 headerRange='{0}{1}:{2}{1}'.format(firstColumnLetter, firstRowLetter, lastColumnLetter)
 customerVMDataExcelTab.merge_range(headerRange, xls.OSDiskSummary['header']['title'], selectHeaderStyle)
 	#PUT COLUMN HEADERS
 for column in xls.OSDiskSummary['columns']:
-	customerVMDataExcelTab.write(xls.OSDiskSummary['firstCellRow'] - 1, xls.OSDiskSummary['columns'][column]['order'] - 1, xls.OSDiskSummary['columns'][column]['name'], selectHeaderStyle)
+	customerVMDataExcelTab.write(xls.OSDiskSummary['firstCellRow'], xls.OSDiskSummary['columns'][column]['order'] - 1, xls.OSDiskSummary['columns'][column]['name'], selectHeaderStyle)
 	#PUT ROWS
 S4OSDiskCountFormula="=SUM({0}{1}:{0}{2})".format( xls.alphabet[xls.managedS4OSDiskColumn['firstColumnIndex']], xls.managedS4OSDiskColumn['firstCellRow'] + 2, xls.rowsForVMInput + 1)
 P4OSDiskCountFormula="=SUM({0}{1}:{0}{2})".format( xls.alphabet[xls.managedP4OSDiskColumn['firstColumnIndex']], xls.managedP4OSDiskColumn['firstCellRow'] + 2, xls.rowsForVMInput + 1)
@@ -489,7 +489,7 @@ S10OSDiskCountFormula="=SUM({0}{1}:{0}{2})".format( xls.alphabet[xls.managedS10O
 P10OSDiskCountFormula="=SUM({0}{1}:{0}{2})".format( xls.alphabet[xls.managedP10OSDiskColumn['firstColumnIndex']], xls.managedP10OSDiskColumn['firstCellRow'] + 2, xls.rowsForVMInput + 1)
 
 for row in xls.OSDiskSummary['rows']:
-	currentRowIndex = xls.OSDiskSummary['firstCellRow'] - 1 + xls.OSDiskSummary['rows'][row]['order']
+	currentRowIndex = xls.OSDiskSummary['firstCellRow'] + xls.OSDiskSummary['rows'][row]['order']
 	if row == 'S4':
 		countFormula=S4OSDiskCountFormula
 	elif row == 'P4':
@@ -812,5 +812,25 @@ for size in sorted(xls.standardSSDDisks, key=lambda k: k['diskSize'], reverse=Tr
 	azureStandardSSDDiskExcelTab.write(currentLine, 6, size['diskSize'], inputBodyStyle)	
 	currentLine += 1
 
+# Create Tables
+for table_definition in xls.tablesDefinition:
+	worksheet_name = table_definition['worksheetName']
+	worksheet = workbook.get_worksheet_by_name(worksheet_name)
+	first_cell_row = table_definition['firstCellRow']
+	first_cell_column = table_definition['firstCellColumn']
+	last_cell_row = table_definition['lastCellRow']
+	last_cell_column = table_definition['lastCellColumn']
+	table_options = table_definition['options']
+	# read column headers
+	columns_definition = []
+	shared_strings = sorted(worksheet.str_table.string_table, key=worksheet.str_table.string_table.get)
+	for column in range (first_cell_column, last_cell_column):
+		cell_value = worksheet.table[first_cell_row][column]
+		if type(cell_value) == xlsxwriter.worksheet.cell_string_tuple:
+			# ref: https://stackoverflow.com/questions/62865195/python-xlsxwriter-extract-value-from-cell
+			cell_string_value = shared_strings[cell_value.string]
+		columns_definition.append({"header": "{}".format(cell_string_value)})
+	table_options['columns'] = columns_definition
+	worksheet.add_table(first_cell_row, first_cell_column, last_cell_row, last_cell_column, table_options)
 
 workbook.close()    

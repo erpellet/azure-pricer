@@ -228,7 +228,7 @@ class xlsStructure:
 	#BLOCK 5
 	ASRColumns = {
 		'firstCellRow': 0,	
-		'name' : 'ASR',
+		'name' : 'ASR?',
 		'width' : 8,
 		'firstColumnIndex' : managedDataDiskColumns['firstColumnIndex'] + len(priceReaderManagedDisk.standardDiskSizes)  + len(priceReaderManagedDisk.premiumDiskSizes) + len(priceReaderManagedDisk.standardSSDDiskSizes)
 	}	
@@ -301,7 +301,7 @@ class xlsStructure:
 		'width' : 15,
 		'firstColumnIndex' : diskPriceColumn['firstColumnIndex'] + 1
 	} 
-	
+
 	#BLOCK 7
 	dataDiskSummary = {
 		'firstCellColumn':0,
@@ -319,7 +319,7 @@ class xlsStructure:
 	#BLOCK 8
 	OSDiskSummary = {
 		'firstCellColumn':0,
-		'firstCellRow': dataDiskSummary['firstCellRow'] + len(priceReaderManagedDisk.standardDiskSizes)  + len(priceReaderManagedDisk.premiumDiskSizes) + len(priceReaderManagedDisk.standardSSDDiskSizes) + 1,
+		'firstCellRow': dataDiskSummary['firstCellRow'] + len(priceReaderManagedDisk.standardDiskSizes)  + len(priceReaderManagedDisk.premiumDiskSizes) + len(priceReaderManagedDisk.standardSSDDiskSizes) + 2,
 		'header': {
 			'width': 2,
 			'title': 'OS DISK SUMMARY'
@@ -396,7 +396,35 @@ class xlsStructure:
 		{ "diskName":"E80", "diskSize":32767}		
 	]
 
+#customerVMDataExcelTab = workbook.add_worksheet('customer-vm-list')
+#azureVMDataBaseExcelTab = workbook.add_worksheet('azure-vm-prices-base')
+#azureVMData1YExcelTab = workbook.add_worksheet('azure-vm-prices-1Y')
+#azureVMData3YExcelTab = workbook.add_worksheet('azure-vm-prices-3Y')
+#azureASRExcelTab = workbook.add_worksheet('azure-asr-prices')
+#azurePremiumDiskExcelTab  = workbook.add_worksheet('azure-premium-disk-prices')
+#azureStandardDiskExcelTab = workbook.add_worksheet('azure-standard-disk-prices')
+#azureStandardSSDDiskExcelTab = workbook.add_worksheet('azure-standardSSD-disk-prices')
+
+
+
+	tablesDefinition = [
+		{
+			'worksheetName': 'customer-vm-list',
+			'firstCellRow': 0,
+			'firstCellColumn': customerInputColumns['firstColumnIndex'],
+			'lastCellRow': rowsForVMInput,
+			'lastCellColumn': osDiskPriceColumn['firstColumnIndex'],
+			'options': {
+				'name': 'Inventory',
+				'header_row': True,
+				'banded_rows': True,
+				'autofilter': True
+			}
+		}
+
+	]
 	
+
 	#GIVEN A CUSTOMER DATA COLUMN RELATIVE INDEX, GET ABSOLUTE SPREADSHEET POSITION
 	def getCustomerDataColumnPositionInExcel(columnIndex):
 		return columnIndex + xlsStructure.customerInputColumns['firstColumnIndex']
